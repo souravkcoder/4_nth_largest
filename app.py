@@ -4,56 +4,55 @@ import os
 app = Flask(__name__)
 
 @app.route("/", methods=["GET", "POST"])
-def nth_largest():
-    result = ""
-    if request.method == "POST":
-        numbers = request.form.get("numbers")
-        n = request.form.get("n")
+def home():
+    result = []
+    message = ""
+    input_val = ""
 
+    if request.method == "POST":
+        input_val = request.form["number"]
         try:
-            num_list = list(map(int, numbers.strip().split(",")))
-            n = int(n)
-            if n <= 0 or n > len(num_list):
-                result = f"❌ Please enter a valid N between 1 and {len(num_list)}"
-            else:
-                num_list.sort(reverse=True)
-                nth = num_list[n - 1]
-                result = f"✅ The {n}th largest number is: <b>{nth}</b>"
-        except Exception as e:
-            result = f"❌ Error: {str(e)}"
+            n = int(input_val)
+            result = [2 * i for i in range(1, n + 1)]
+        except ValueError:
+            message = "❌ Please enter a valid integer."
 
     return render_template_string("""
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Nth Largest Number</title>
+        <title>Even Number Generator</title>
         <style>
             body {
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                background: #f2f6fc;
+                font-family: 'Segoe UI', sans-serif;
+                background-color: #f8f9fa;
                 display: flex;
-                flex-direction: column;
+                justify-content: center;
                 align-items: center;
-                padding-top: 60px;
+                height: 100vh;
+                margin: 0;
             }
             .container {
                 background: white;
                 padding: 30px;
                 border-radius: 10px;
-                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
                 width: 90%;
                 max-width: 500px;
+                text-align: center;
             }
-            input[type="text"], input[type="number"] {
-                width: 100%;
+            input[type=number] {
+                width: 80%;
                 padding: 10px;
+                font-size: 16px;
                 margin-top: 10px;
-                margin-bottom: 20px;
+                margin-bottom: 10px;
                 border: 1px solid #ccc;
                 border-radius: 5px;
             }
             button {
                 padding: 10px 20px;
+                font-size: 16px;
                 background-color: #007bff;
                 color: white;
                 border: none;
@@ -63,31 +62,42 @@ def nth_largest():
             button:hover {
                 background-color: #0056b3;
             }
-            .result {
+            .result, .error {
                 margin-top: 20px;
-                font-size: 18px;
+                font-size: 16px;
+            }
+            .error {
+                color: red;
+            }
+            .result {
+                background: #e9f5ff;
+                padding: 10px;
+                border-radius: 5px;
+                display: inline-block;
             }
         </style>
     </head>
     <body>
         <div class="container">
-            <h2>Nth Largest Number Finder</h2>
-            <p>Enter a list of comma-separated numbers and choose which largest number (N) you want to find.</p>
+            <h2>Generate First N Even Numbers</h2>
             <form method="POST">
-                <label>Enter numbers (comma-separated):</label>
-                <input type="text" name="numbers" required placeholder="e.g., 10, 50, 20, 5, 100">
-                
-                <label>Enter N:</label>
-                <input type="number" name="n" required placeholder="e.g., 2">
-                
-                <button type="submit">Find Nth Largest</button>
+                <input name="number" type="number" placeholder="Enter a positive integer" value="{{ input_val }}">
+                <br>
+                <button type="submit">Generate</button>
             </form>
-            <div class="result">{{ result|safe }}</div>
+
+            {% if message %}
+                <div class="error">{{ message }}</div>
+            {% elif result %}
+                <div class="result">
+                    <strong>Even Numbers:</strong><br>{{ result }}
+                </div>
+            {% endif %}
         </div>
     </body>
     </html>
-    """, result=result)
+    """, result=result, message=message, input_val=input_val)
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5005))
+    port = int(os.environ.get("PORT", 5002))
     app.run(host="0.0.0.0", port=port)
